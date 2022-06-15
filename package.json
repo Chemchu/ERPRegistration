@@ -1,0 +1,25 @@
+{
+  "name": "erpregistration",
+  "version": "1.0.0",
+  "description": "Servicio de registro y cambio de contraseña para ERPSolution",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chemchu/ERPRegistration.git"
+  },
+  "keywords": [
+    "node",
+    "nodejs",
+    "nodemailer",
+    "registro"
+  ],
+  "author": "Gustavo Lee",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Chemchu/ERPRegistration/issues"
+  },
+  "homepage": "https://github.com/Chemchu/ERPRegistration#readme"
+}
