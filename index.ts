@@ -35,8 +35,14 @@ app.get('/api', (req, res) => {
 
 app.get('/api/confirmacion/:token', (req, res) => {
     try {
-        const confirmationHtmlPath = path.join(__dirname, "/public/confirmation.html");
+        const token = req.params.token;
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) { throw "JWT_SECRET no encontrado en .env" }
 
+        const payload = jwt.verify(token, jwtSecret);
+        if (!payload) { throw "Token no válido" }
+
+        const confirmationHtmlPath = path.join(__dirname, "/public/confirmation.html");
         res.sendFile(confirmationHtmlPath)
     }
     catch (err) {
@@ -47,14 +53,21 @@ app.get('/api/confirmacion/:token', (req, res) => {
 app.post('/api/confirmacion/:token', (req, res) => {
     try {
         const token = req.params.token;
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) { throw "JWT_SECRET no encontrado en .env" }
+
+        let payload: any = jwt.verify(token, jwtSecret);
+        if (!payload) { throw "Token no válido" }
 
         const password = req.body.password;
-        console.log(password);
+        payload.password = password;
 
-        res.status(200).json({ message: "Llega correctamente" })
+        const confirmationHtmlPath = path.join(__dirname, "/public/confirmationSuccess.html");
+        res.sendFile(confirmationHtmlPath)
     }
     catch (err) {
-        res.status(500).json({ message: `Error en el servidor. ${err}` })
+        const confirmationHtmlPath = path.join(__dirname, "/public/confirmationFailed.html");
+        res.sendFile(confirmationHtmlPath)
     }
 })
 
@@ -67,9 +80,16 @@ app.post('/api/empleados', (req, res) => {
         const rol = req.body.rol;
 
         const jwtSecret = process.env.JWT_SECRET;
-        if (!jwtSecret) { throw "JWT_SECRET no encontraddo en .env" }
+        if (!jwtSecret) { throw "JWT_SECRET no encontrado en .env" }
 
-        const jwtToken = jwt.sign({ email: email, nombre: nombre, apellidos: apellidos, dni: dni, rol: rol }, jwtSecret);
+        const jwtToken = jwt.sign({
+            email: email,
+            nombre: nombre,
+            apellidos: apellidos,
+            dni: dni,
+            rol: rol
+        },
+            jwtSecret, { expiresIn: "24h" });
 
         const url = process.env.URL + `:${process.env.SERVER_PORT}/api/confirmacion/${jwtToken}`
         SendConfirmation(email, url)

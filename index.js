@@ -33,6 +33,15 @@ app.get('/api', (req, res) => {
 });
 app.get('/api/confirmacion/:token', (req, res) => {
     try {
+        const token = req.params.token;
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            throw "JWT_SECRET no encontrado en .env";
+        }
+        const payload = jsonwebtoken_1.default.verify(token, jwtSecret);
+        if (!payload) {
+            throw "Token no válido";
+        }
         const confirmationHtmlPath = path_1.default.join(__dirname, "/public/confirmation.html");
         res.sendFile(confirmationHtmlPath);
     }
@@ -43,12 +52,22 @@ app.get('/api/confirmacion/:token', (req, res) => {
 app.post('/api/confirmacion/:token', (req, res) => {
     try {
         const token = req.params.token;
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            throw "JWT_SECRET no encontrado en .env";
+        }
+        let payload = jsonwebtoken_1.default.verify(token, jwtSecret);
+        if (!payload) {
+            throw "Token no válido";
+        }
         const password = req.body.password;
-        console.log(password);
-        res.status(200).json({ message: "Llega correctamente" });
+        payload.password = password;
+        const confirmationHtmlPath = path_1.default.join(__dirname, "/public/confirmationSuccess.html");
+        res.sendFile(confirmationHtmlPath);
     }
     catch (err) {
-        res.status(500).json({ message: `Error en el servidor. ${err}` });
+        const confirmationHtmlPath = path_1.default.join(__dirname, "/public/confirmationFailed.html");
+        res.sendFile(confirmationHtmlPath);
     }
 });
 app.post('/api/empleados', (req, res) => {
@@ -60,9 +79,15 @@ app.post('/api/empleados', (req, res) => {
         const rol = req.body.rol;
         const jwtSecret = process.env.JWT_SECRET;
         if (!jwtSecret) {
-            throw "JWT_SECRET no encontraddo en .env";
+            throw "JWT_SECRET no encontrado en .env";
         }
-        const jwtToken = jsonwebtoken_1.default.sign({ email: email, nombre: nombre, apellidos: apellidos, dni: dni, rol: rol }, jwtSecret);
+        const jwtToken = jsonwebtoken_1.default.sign({
+            email: email,
+            nombre: nombre,
+            apellidos: apellidos,
+            dni: dni,
+            rol: rol
+        }, jwtSecret, { expiresIn: "24h" });
         const url = process.env.URL + `:${process.env.SERVER_PORT}/api/confirmacion/${jwtToken}`;
         (0, confirmationEmail_1.default)(email, url);
         res.status(200).json({ message: `Correo de confirmación enviado.` });
