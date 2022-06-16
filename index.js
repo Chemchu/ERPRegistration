@@ -5,7 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const winston_1 = __importDefault(require("winston"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const express_winston_1 = __importDefault(require("express-winston"));
+const confirmationEmail_1 = __importDefault(require("./src/confirmationEmail"));
+const path_1 = __importDefault(require("path"));
+const body_parser_1 = __importDefault(require("body-parser"));
 const app = (0, express_1.default)();
 const logger = express_winston_1.default.logger({
     transports: [
@@ -19,20 +23,59 @@ const logger = express_winston_1.default.logger({
     ignoreRoute: function (req, res) { return false; }
 });
 app.use(logger);
+app.use(body_parser_1.default.json());
+app.use(body_parser_1.default.urlencoded({
+    extended: true
+}));
+app.use(express_1.default.static(`${__dirname}/public`));
 app.get('/api', (req, res) => {
     res.send('Registration API for ERPSolution');
 });
+app.get('/api/confirmacion/:token', (req, res) => {
+    try {
+        const confirmationHtmlPath = path_1.default.join(__dirname, "/public/confirmation.html");
+        res.sendFile(confirmationHtmlPath);
+    }
+    catch (err) {
+        res.status(500).json({ message: `Error en el servidor. ${err}` });
+    }
+});
+app.post('/api/confirmacion/:token', (req, res) => {
+    try {
+        const token = req.params.token;
+        const password = req.body.password;
+        console.log(password);
+        res.status(200).json({ message: "Llega correctamente" });
+    }
+    catch (err) {
+        res.status(500).json({ message: `Error en el servidor. ${err}` });
+    }
+});
 app.post('/api/empleados', (req, res) => {
-    const email = req.body.email;
-    const nombre = req.body.nombre;
-    const apellidos = req.body.apellidos;
-    const dni = req.body.dni;
-    res.send('Hello World!');
+    try {
+        const email = req.body.email;
+        const nombre = req.body.nombre;
+        const apellidos = req.body.apellidos;
+        const dni = req.body.dni;
+        const rol = req.body.rol;
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            throw "JWT_SECRET no encontraddo en .env";
+        }
+        const jwtToken = jsonwebtoken_1.default.sign({ email: email, nombre: nombre, apellidos: apellidos, dni: dni, rol: rol }, jwtSecret);
+        const url = process.env.URL + `:${process.env.SERVER_PORT}/api/confirmacion/${jwtToken}`;
+        (0, confirmationEmail_1.default)(email, url);
+        res.status(200).json({ message: `Correo de confirmación enviado.` });
+    }
+    catch (err) {
+        res.status(500).json({ message: `Error en el servidor. ${err}` });
+    }
 });
 app.put('/api/empleados', (req, res) => {
     res.send('Hello World!');
 });
-app.listen(7070, () => {
+const port = process.env.SERVER_PORT;
+app.listen(port, () => {
     console.log("Servidor iniciado");
-    console.log("Escuchando en el puerto 7070");
+    console.log("Escuchando en el puerto: " + port);
 });

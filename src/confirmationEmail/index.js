@@ -4,13 +4,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sendEmail_1 = __importDefault(require("../sendEmail"));
-const SendConfirmation = (destinatario) => {
-    const url = "https://www.google.es/";
+const SendConfirmation = (destinatario, confirmationUrl) => {
+    const Contenido = `
+    ¡Bienvenido! Para completar su registro, acceda al enlace de abajo y cree su contraseña. ${confirmationUrl}`;
     const ContenidoHtml = `
         <h1>¡Bienvenido!</h1>
         <p>Para completar su registro, acceda al enlace de abajo y cree su contraseña</p>
-        <a href=${url}>Confirmar cuenta</a>
+        <a href=${confirmationUrl}>Confirmar cuenta</a>
     `;
-    (0, sendEmail_1.default)(destinatario, "Correo de confirmación ERPSolution", undefined, ContenidoHtml);
+    (0, sendEmail_1.default)(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
+};
+const ReceiveConfirmation = (destinatario, confirmationUrl) => {
+    const Contenido = `
+    ¡Bienvenido! Para completar su registro, acceda al enlace de abajo y cree su contraseña. ${confirmationUrl}`;
+    const ContenidoHtml = `
+        <h1>¡Bienvenido!</h1>
+        <p>Para completar su registro, acceda al enlace de abajo y cree su contraseña</p>
+        <a href=${confirmationUrl}>Confirmar cuenta</a>
+    `;
+    (0, sendEmail_1.default)(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
 };
 exports.default = SendConfirmation;
