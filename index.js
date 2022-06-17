@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -10,6 +19,7 @@ const express_winston_1 = __importDefault(require("express-winston"));
 const confirmationEmail_1 = __importDefault(require("./src/confirmationEmail"));
 const path_1 = __importDefault(require("path"));
 const body_parser_1 = __importDefault(require("body-parser"));
+const axios_1 = __importDefault(require("axios"));
 const app = (0, express_1.default)();
 const logger = express_winston_1.default.logger({
     transports: [
@@ -49,12 +59,16 @@ app.get('/api/confirmacion/:token', (req, res) => {
         res.status(500).json({ message: `Error en el servidor. ${err}` });
     }
 });
-app.post('/api/confirmacion/:token', (req, res) => {
+app.post('/api/confirmacion/:token', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const token = req.params.token;
         const jwtSecret = process.env.JWT_SECRET;
+        const gatewayUrl = process.env.ERPGATEWAY_URL;
         if (!jwtSecret) {
             throw "JWT_SECRET no encontrado en .env";
+        }
+        if (!gatewayUrl) {
+            throw "ERPGATEWAY_URL no encontrado en .env";
         }
         let payload = jsonwebtoken_1.default.verify(token, jwtSecret);
         if (!payload) {
@@ -62,14 +76,30 @@ app.post('/api/confirmacion/:token', (req, res) => {
         }
         const password = req.body.password;
         payload.password = password;
+        const gatewayRes = yield axios_1.default.post(gatewayUrl, {
+            "query": ADD_EMPLEADO,
+            "variables": {
+                "empleadoInput": {
+                    "nombre": payload.nombre,
+                    "apellidos": payload.apellidos,
+                    "dni": payload.dni,
+                    "rol": payload.rol,
+                    "email": payload.email,
+                    "password": payload.password
+                }
+            }
+        });
+        const gatewayJson = gatewayRes.data();
+        console.log(gatewayJson);
         const confirmationHtmlPath = path_1.default.join(__dirname, "/public/confirmationSuccess.html");
         res.sendFile(confirmationHtmlPath);
     }
     catch (err) {
         const confirmationHtmlPath = path_1.default.join(__dirname, "/public/confirmationFailed.html");
         res.sendFile(confirmationHtmlPath);
+        console.log(err);
     }
-});
+}));
 app.post('/api/empleados', (req, res) => {
     try {
         const email = req.body.email;
@@ -97,7 +127,7 @@ app.post('/api/empleados', (req, res) => {
     }
 });
 app.put('/api/empleados', (req, res) => {
-    res.send('Hello World!');
+    res.send('Cambiar contraseña a medio hacer');
 });
 const port = process.env.SERVER_PORT;
 app.listen(port, () => {

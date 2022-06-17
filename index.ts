@@ -5,6 +5,7 @@ import expressWinston from 'express-winston';
 import SendConfirmation from './src/confirmationEmail';
 import path from 'path';
 import bodyParser from 'body-parser';
+import axios from "axios"
 
 const app = express()
 const logger = expressWinston.logger({
@@ -50,11 +51,13 @@ app.get('/api/confirmacion/:token', (req, res) => {
     }
 })
 
-app.post('/api/confirmacion/:token', (req, res) => {
+app.post('/api/confirmacion/:token', async (req, res) => {
     try {
         const token = req.params.token;
         const jwtSecret = process.env.JWT_SECRET;
+        const gatewayUrl = process.env.ERPGATEWAY_URL;
         if (!jwtSecret) { throw "JWT_SECRET no encontrado en .env" }
+        if (!gatewayUrl) { throw "ERPGATEWAY_URL no encontrado en .env" }
 
         let payload: any = jwt.verify(token, jwtSecret);
         if (!payload) { throw "Token no válido" }
@@ -62,12 +65,32 @@ app.post('/api/confirmacion/:token', (req, res) => {
         const password = req.body.password;
         payload.password = password;
 
+        // --> Hacer petición a servidor de base de datos para almacenar la información del cliente
+        const gatewayRes = await axios.post(gatewayUrl, {
+            "query": ADD_EMPLEADO,
+            "variables": {
+                "empleadoInput": {
+                    "nombre": payload.nombre,
+                    "apellidos": payload.apellidos,
+                    "dni": payload.dni,
+                    "rol": payload.rol,
+                    "email": payload.email,
+                    "password": payload.password
+                }
+            }
+        });
+        const gatewayJson = gatewayRes.data()
+
+        console.log(gatewayJson);
+
         const confirmationHtmlPath = path.join(__dirname, "/public/confirmationSuccess.html");
         res.sendFile(confirmationHtmlPath)
     }
     catch (err) {
         const confirmationHtmlPath = path.join(__dirname, "/public/confirmationFailed.html");
         res.sendFile(confirmationHtmlPath)
+        console.log(err);
+
     }
 })
 
@@ -102,7 +125,7 @@ app.post('/api/empleados', (req, res) => {
 })
 
 app.put('/api/empleados', (req, res) => {
-    res.send('Hello World!')
+    res.send('Cambiar contraseña a medio hacer')
 })
 
 const port = process.env.SERVER_PORT;
