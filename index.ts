@@ -6,6 +6,7 @@ import SendConfirmation from './src/confirmationEmail';
 import path from 'path';
 import bodyParser from 'body-parser';
 import axios from "axios"
+import { ADD_EMPLEADO } from './graphqlQuerys/querys';
 
 const app = express()
 const logger = expressWinston.logger({
@@ -79,9 +80,6 @@ app.post('/api/confirmacion/:token', async (req, res) => {
                 }
             }
         });
-        const gatewayJson = gatewayRes.data()
-
-        console.log(gatewayJson);
 
         const confirmationHtmlPath = path.join(__dirname, "/public/confirmationSuccess.html");
         res.sendFile(confirmationHtmlPath)
@@ -90,7 +88,6 @@ app.post('/api/confirmacion/:token', async (req, res) => {
         const confirmationHtmlPath = path.join(__dirname, "/public/confirmationFailed.html");
         res.sendFile(confirmationHtmlPath)
         console.log(err);
-
     }
 })
 

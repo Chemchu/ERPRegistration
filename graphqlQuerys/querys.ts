@@ -1,4 +1,4 @@
-const ADD_EMPLEADO = `
+export const ADD_EMPLEADO = `
 mutation AddEmpleado($empleadoInput: EmpleadoInputFields!) {
   addEmpleado(empleadoInput: $empleadoInput) {
     message

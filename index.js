@@ -20,6 +20,7 @@ const confirmationEmail_1 = __importDefault(require("./src/confirmationEmail"));
 const path_1 = __importDefault(require("path"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const axios_1 = __importDefault(require("axios"));
+const querys_1 = require("./graphqlQuerys/querys");
 const app = (0, express_1.default)();
 const logger = express_winston_1.default.logger({
     transports: [
@@ -77,7 +78,7 @@ app.post('/api/confirmacion/:token', (req, res) => __awaiter(void 0, void 0, voi
         const password = req.body.password;
         payload.password = password;
         const gatewayRes = yield axios_1.default.post(gatewayUrl, {
-            "query": ADD_EMPLEADO,
+            "query": querys_1.ADD_EMPLEADO,
             "variables": {
                 "empleadoInput": {
                     "nombre": payload.nombre,
@@ -89,8 +90,6 @@ app.post('/api/confirmacion/:token', (req, res) => __awaiter(void 0, void 0, voi
                 }
             }
         });
-        const gatewayJson = gatewayRes.data();
-        console.log(gatewayJson);
         const confirmationHtmlPath = path_1.default.join(__dirname, "/public/confirmationSuccess.html");
         res.sendFile(confirmationHtmlPath);
     }
