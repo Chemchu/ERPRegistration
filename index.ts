@@ -66,7 +66,6 @@ app.post('/api/confirmacion/:token', async (req, res) => {
         const password = req.body.password;
         payload.password = password;
 
-        // --> Hacer petición a servidor de base de datos para almacenar la información del cliente
         const gatewayRes = await axios.post(gatewayUrl, {
             "query": ADD_EMPLEADO,
             "variables": {
@@ -80,9 +79,18 @@ app.post('/api/confirmacion/:token', async (req, res) => {
                 }
             }
         });
+        const data = JSON.parse(gatewayRes.data.data)
+        const successful = data.addEmpleado.successful;
+        // const message = data.addEmpleado.message;
 
-        const confirmationHtmlPath = path.join(__dirname, "/public/confirmationSuccess.html");
-        res.sendFile(confirmationHtmlPath)
+        if (successful) {
+            const confirmationHtmlPath = path.join(__dirname, "/public/confirmationSuccess.html");
+            res.sendFile(confirmationHtmlPath)
+        }
+        else {
+            const confirmationHtmlPath = path.join(__dirname, "/public/confirmationFailed.html");
+            res.sendFile(confirmationHtmlPath)
+        }
     }
     catch (err) {
         const confirmationHtmlPath = path.join(__dirname, "/public/confirmationFailed.html");
@@ -91,7 +99,7 @@ app.post('/api/confirmacion/:token', async (req, res) => {
     }
 })
 
-app.post('/api/empleados', (req, res) => {
+app.post('/api/empleados', async (req, res) => {
     try {
         const email = req.body.email;
         const nombre = req.body.nombre;
@@ -112,12 +120,12 @@ app.post('/api/empleados', (req, res) => {
             jwtSecret, { expiresIn: "24h" });
 
         const url = process.env.URL + `:${process.env.SERVER_PORT}/api/confirmacion/${jwtToken}`
-        SendConfirmation(email, url)
+        const emailSent = await SendConfirmation(email, url)
 
-        res.status(200).json({ message: `Correo de confirmación enviado.` })
+        res.status(emailSent ? 200 : 300).json({ data: { message: `El correo de confirmación ${emailSent ? "ha sido" : "no ha podido ser"} enviado.`, successful: emailSent } })
     }
     catch (err) {
-        res.status(500).json({ message: `Error en el servidor. ${err}` })
+        res.status(500).json({ data: { message: `Error en el servidor. ${err}`, successful: false } })
     }
 })
 

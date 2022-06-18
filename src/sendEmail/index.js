@@ -16,23 +16,30 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const SendEmail = (destinatario, asunto, contenido, contenidoHtml) => __awaiter(void 0, void 0, void 0, function* () {
-    const credentials = {
-        host: process.env.HOST,
-        port: 587,
-        secure: false,
-        auth: {
-            user: process.env.USER,
-            pass: process.env.SECRET,
-        },
-    };
-    let transporter = nodemailer_1.default.createTransport(credentials);
-    let info = yield transporter.sendMail({
-        from: `ERPSolution <${process.env.EMAIL}>`,
-        to: destinatario,
-        subject: asunto,
-        text: contenido || "",
-        html: contenidoHtml || "",
-    });
-    console.log("Message sent: %s", info.messageId);
+    try {
+        const credentials = {
+            host: process.env.HOST,
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.USER,
+                pass: process.env.SECRET,
+            },
+        };
+        let transporter = nodemailer_1.default.createTransport(credentials);
+        let info = yield transporter.sendMail({
+            from: `ERPSolution <${process.env.EMAIL}>`,
+            to: destinatario,
+            subject: asunto,
+            text: contenido || "",
+            html: contenidoHtml || "",
+        });
+        console.log("Message sent: %s", info.messageId);
+        return info.accepted.length > 0;
+    }
+    catch (err) {
+        console.log(err);
+        return false;
+    }
 });
 exports.default = SendEmail;

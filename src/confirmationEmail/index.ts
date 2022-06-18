@@ -11,7 +11,7 @@ const SendConfirmation = (destinatario: string, confirmationUrl: string) => {
         <p>Recuerde: este enlace caducará en 24H</p>
     `
 
-    SendEmail(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
+    return SendEmail(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
 }
 
 const ReceiveConfirmation = (destinatario: string, confirmationUrl: string) => {
@@ -24,7 +24,7 @@ const ReceiveConfirmation = (destinatario: string, confirmationUrl: string) => {
         <a href=${confirmationUrl}>Confirmar cuenta</a>
     `
 
-    SendEmail(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
+    return SendEmail(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
 }
 
 export default SendConfirmation;

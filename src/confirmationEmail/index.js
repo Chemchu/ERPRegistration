@@ -13,7 +13,7 @@ const SendConfirmation = (destinatario, confirmationUrl) => {
         <a href=${confirmationUrl}>Confirmar cuenta</a>
         <p>Recuerde: este enlace caducará en 24H</p>
     `;
-    (0, sendEmail_1.default)(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
+    return (0, sendEmail_1.default)(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
 };
 const ReceiveConfirmation = (destinatario, confirmationUrl) => {
     const Contenido = `
@@ -23,6 +23,6 @@ const ReceiveConfirmation = (destinatario, confirmationUrl) => {
         <p>Para completar su registro, acceda al enlace de abajo y cree su contraseña</p>
         <a href=${confirmationUrl}>Confirmar cuenta</a>
     `;
-    (0, sendEmail_1.default)(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
+    return (0, sendEmail_1.default)(destinatario, "Correo de confirmación ERPSolution", Contenido, ContenidoHtml);
 };
 exports.default = SendConfirmation;
