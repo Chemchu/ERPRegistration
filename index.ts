@@ -79,10 +79,9 @@ app.post('/api/confirmacion/:token', async (req, res) => {
                 }
             }
         });
+
         const data = JSON.parse(gatewayRes.data.data)
         const successful = data.addEmpleado.successful;
-        // const message = data.addEmpleado.message;
-
         if (successful) {
             const confirmationHtmlPath = path.join(__dirname, "/public/confirmationSuccess.html");
             res.sendFile(confirmationHtmlPath)
@@ -92,10 +91,10 @@ app.post('/api/confirmacion/:token', async (req, res) => {
             res.sendFile(confirmationHtmlPath)
         }
     }
-    catch (err) {
+    catch (err: any) {
+        console.log("Error: " + err.response.data);
         const confirmationHtmlPath = path.join(__dirname, "/public/confirmationFailed.html");
         res.sendFile(confirmationHtmlPath)
-        console.log(err);
     }
 })
 
@@ -119,7 +118,7 @@ app.post('/api/empleados', async (req, res) => {
         },
             jwtSecret, { expiresIn: "24h" });
 
-        const url = process.env.URL + `:${process.env.SERVER_PORT}/api/confirmacion/${jwtToken}`
+        const url = `${process.env.URL}api/registro/confirmacion/${jwtToken}`
         const emailSent = await SendConfirmation(email, url)
 
         res.status(emailSent ? 200 : 300).json({ data: { message: `El correo de confirmación ${emailSent ? "ha sido" : "no ha podido ser"} enviado.`, successful: emailSent } })

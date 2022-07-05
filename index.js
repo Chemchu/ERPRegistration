@@ -102,9 +102,9 @@ app.post('/api/confirmacion/:token', (req, res) => __awaiter(void 0, void 0, voi
         }
     }
     catch (err) {
+        console.log("Error: " + err.response.data);
         const confirmationHtmlPath = path_1.default.join(__dirname, "/public/confirmationFailed.html");
         res.sendFile(confirmationHtmlPath);
-        console.log(err);
     }
 }));
 app.post('/api/empleados', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -125,7 +125,7 @@ app.post('/api/empleados', (req, res) => __awaiter(void 0, void 0, void 0, funct
             dni: dni,
             rol: rol
         }, jwtSecret, { expiresIn: "24h" });
-        const url = process.env.URL + `:${process.env.SERVER_PORT}/api/confirmacion/${jwtToken}`;
+        const url = `${process.env.URL}api/registro/confirmacion/${jwtToken}`;
         const emailSent = yield (0, confirmationEmail_1.default)(email, url);
         res.status(emailSent ? 200 : 300).json({ data: { message: `El correo de confirmación ${emailSent ? "ha sido" : "no ha podido ser"} enviado.`, successful: emailSent } });
     }
