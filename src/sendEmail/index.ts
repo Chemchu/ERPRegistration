@@ -1,21 +1,29 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import AWS, { ConfigurationOptions } from 'aws-sdk';
 
 dotenv.config()
 
 const SendEmail = async (destinatario: string, asunto: string, contenido?: string, contenidoHtml?: string) => {
     try {
-        const credentials = {
-            host: process.env.HOST,
-            port: 587,
-            secure: false,
-            auth: {
-                user: process.env.USER,
-                pass: process.env.SECRET,
-            },
+        const keyId = process.env.USER
+        const secretKey = process.env.SECRET
+
+        if (!keyId || !secretKey) { throw "Las credenciales de AWS SES no pueden ser indefinidas" }
+
+        // configure AWS SDK
+        const conf: ConfigurationOptions = {
+            region: process.env.REGION,
+            credentials: {
+                accessKeyId: keyId,
+                secretAccessKey: secretKey
+            }
         }
-        // create reusable transporter object using the default SMTP transport
-        let transporter = nodemailer.createTransport(credentials);
+        AWS.config.update(conf);
+
+        const transporter = nodemailer.createTransport({
+            SES: new AWS.SES(),
+        });
 
         // send mail with defined transport object
         let info = await transporter.sendMail({

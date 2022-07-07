@@ -14,19 +14,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const aws_sdk_1 = __importDefault(require("aws-sdk"));
 dotenv_1.default.config();
 const SendEmail = (destinatario, asunto, contenido, contenidoHtml) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const credentials = {
-            host: process.env.HOST,
-            port: 587,
-            secure: false,
-            auth: {
-                user: process.env.USER,
-                pass: process.env.SECRET,
-            },
+        const keyId = process.env.USER;
+        const secretKey = process.env.SECRET;
+        if (!keyId || !secretKey) {
+            throw "Las credenciales de AWS SES no pueden ser indefinidas";
+        }
+        const conf = {
+            region: process.env.REGION,
+            credentials: {
+                accessKeyId: keyId,
+                secretAccessKey: secretKey
+            }
         };
-        let transporter = nodemailer_1.default.createTransport(credentials);
+        aws_sdk_1.default.config.update(conf);
+        const transporter = nodemailer_1.default.createTransport({
+            SES: new aws_sdk_1.default.SES(),
+        });
         let info = yield transporter.sendMail({
             from: `ERPSolution <${process.env.EMAIL}>`,
             to: destinatario,
