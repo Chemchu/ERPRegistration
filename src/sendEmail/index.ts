@@ -26,7 +26,7 @@ const SendEmail = async (destinatario: string, asunto: string, contenido?: strin
         });
 
         // send mail with defined transport object
-        const info = await transporter.sendMail({
+        await transporter.sendMail({
             from: `ERPSolution <${process.env.EMAIL}>`, // sender address
             to: destinatario, // list of receivers
             subject: asunto, // Subject line
@@ -34,11 +34,7 @@ const SendEmail = async (destinatario: string, asunto: string, contenido?: strin
             html: contenidoHtml || "", // html body
         });
 
-        console.log(info);
-
-
-        console.log("Message sent: %s", info.messageId);
-        return info.accepted;
+        return true
     }
     catch (err) {
         console.log(err);

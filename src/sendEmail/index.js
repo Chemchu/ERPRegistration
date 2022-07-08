@@ -34,16 +34,14 @@ const SendEmail = (destinatario, asunto, contenido, contenidoHtml) => __awaiter(
         const transporter = nodemailer_1.default.createTransport({
             SES: new aws_sdk_1.default.SES(),
         });
-        const info = yield transporter.sendMail({
+        yield transporter.sendMail({
             from: `ERPSolution <${process.env.EMAIL}>`,
             to: destinatario,
             subject: asunto,
             text: contenido || "",
             html: contenidoHtml || "",
         });
-        console.log(info);
-        console.log("Message sent: %s", info.messageId);
-        return info.accepted;
+        return true;
     }
     catch (err) {
         console.log(err);
